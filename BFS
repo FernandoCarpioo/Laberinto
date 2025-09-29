@@ -1,0 +1,94 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Laberinto 16x16 con 1 representando paredes y 0 caminos.
+mapa = np.array([
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0],
+    [1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0],
+    [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+    [0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1],
+    [1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1],
+    [0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+    [0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+    [1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0],
+    [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+    [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0],
+    [1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0]
+])
+
+##for fila in main:
+  ##  print(fila)
+
+## Posición inicial
+punto_inicial = (1 , 1)
+## Meta
+meta = (18 , 18)
+
+## Reglas de movimiento
+movimientos = [(0,1), (1,0), (0,-1), (-1,0)]
+
+def bfs(mapa, punto_inicial, meta):
+    ## Asignamos el punto inicial a la lista
+    pila = [(punto_inicial, [])]
+
+    filas = np.shape(mapa)[0]   # Devuelve una "coordenada" bidimensional, pero nosotros tomamos el primer valor que son las filas.
+    columnas = np.shape(mapa)[1]
+
+    visitados = np.zeros((filas, columnas))
+
+## A través de la variable "considerados"se irán guardando tanto los nodos
+## ya visitados y el camino que se irá construyendo.
+    considerados = []
+
+    while len(pila) > 0 :
+        nodo_actual, camino = pila[0]
+        pila = pila[1:]
+
+        ## Guardar el nodo inicial dentro de la variable considerados
+        considerados += [nodo_actual]   ## "+=" es concatenación
+
+        ## El nodo actual es la solución?
+        if nodo_actual == meta:
+            return camino + [nodo_actual], considerados
+
+        visitados[nodo_actual[0], nodo_actual[1]]=1   ## Accedemos a las coordenadas 'x' y 'y' del nodo_actual con los indices 0 y 1, y lo marcamos como visitado.
+        
+        for vecinos in movimientos:
+            vecino = (nodo_actual[0] + vecinos[0] , nodo_actual[1] + vecinos[1])    ## Aplicamos un movimeinto de la lista de movimientos.
+            ## Corroborar que vecino esté dentro del mapa, que sea un nodo transitable y que no haya sido visitado previamente.
+            ## Los nodos visitados tienen 0's.
+            if((0 <= vecino[0] < filas) and (0 <= vecino[1] < columnas) and (mapa[vecino[0], vecino[1]]) == 0 and (visitados[vecino[0], vecino[1]]) == 0): 
+                ## Concatenar el nodo a la pila.
+                pila += [(vecino, camino + [nodo_actual])]
+                
+    return None, considerados
+
+def desplegar_laberinto(mapa, camino, considerados):
+    ## Desplegar el mapa.
+    plt.imshow(mapa, cmap ='binary')
+    ## Despliegue de considerados
+    if considerados:
+        ## Regresa todas las posiciones almacenadas en 'Considerados' (uns lista de tuplas).
+        for i in considerados:
+            plt.plot(i[1], i[0], 'o', color = 'blue')
+
+    if camino:
+        ## Regresa todas las posiciones almacenadas en 'Considerados' (uns lista de tuplas).
+        for j in camino:
+            plt.plot(j[1], j[0], 'o', color = 'red')
+
+    ## Imprimimos la solución.
+    plt.show()
+
+## Llamado de las funciones.
+camino, considerados = bfs(mapa, punto_inicial, meta)
+desplegar_laberinto(mapa, camino, considerados)
